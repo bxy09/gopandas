@@ -11,11 +11,18 @@ const (
 	NotExist string = "NotExist"
 )
 
-//NewStringIndex is the constructor of StringIndex
+//NewStringIndex is the constructor of StringIndex, duplicate record will be dropped
 func NewStringIndex(array []string, needCopy bool) StringIndex {
 	mapping := make(map[string]int)
-	for idx, value := range array {
-		mapping[value] = idx + 1 //Add one for convenient on Index
+	idx := 0
+	for _, value := range array {
+		if mapping[value] > 0 {
+			//duplicate record
+			needCopy = true
+		} else {
+			mapping[value] = idx + 1 //Add one for convenient on Index
+			idx++
+		}
 	}
 	ret := StringIndex{
 		mapping: mapping,
@@ -23,7 +30,9 @@ func NewStringIndex(array []string, needCopy bool) StringIndex {
 	}
 	if needCopy {
 		ret.array = make([]string, len(array))
-		copy(ret.array, array)
+		for value, idx := range mapping {
+			ret.array[idx-1] = value
+		}
 	}
 	return ret
 }
@@ -41,4 +50,14 @@ func (s StringIndex) String(idx int) string {
 //Length give the index length
 func (s StringIndex) Length() int {
 	return len(s.array)
+}
+
+//Append add new string, if str is duplicate, nothing happens
+func (s *StringIndex) Append(str string) {
+	if s.Index(str) >= 0 {
+		return
+	}
+	s.array = append(s.array, str)
+	s.mapping[str] = len(s.array)
+	return
 }
