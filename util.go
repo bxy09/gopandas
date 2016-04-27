@@ -1,5 +1,7 @@
 package gopandas
 
+import "time"
+
 //StringArrayGetElse get string value from array or else
 func StringArrayGetElse(array []string, idx int, elseValue string) string {
 	if idx >= 0 && idx < len(array) {
@@ -20,3 +22,7 @@ func IntRange(start, end, step int) []int {
 	}
 	return ret
 }
+
+var (
+	AncientTime = time.Unix(0, 0)
+)

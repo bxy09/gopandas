@@ -12,7 +12,7 @@ const (
 )
 
 //NewStringIndex is the constructor of StringIndex, duplicate record will be dropped
-func NewStringIndex(array []string, needCopy bool) StringIndex {
+func NewStringIndex(array []string, needCopy bool) *StringIndex {
 	mapping := make(map[string]int)
 	idx := 0
 	for _, value := range array {
@@ -24,7 +24,7 @@ func NewStringIndex(array []string, needCopy bool) StringIndex {
 			idx++
 		}
 	}
-	ret := StringIndex{
+	ret := &StringIndex{
 		mapping: mapping,
 		array:   array,
 	}
@@ -38,17 +38,26 @@ func NewStringIndex(array []string, needCopy bool) StringIndex {
 }
 
 //Index get idx, if not exist return -1
-func (s StringIndex) Index(ftr string) int {
+func (s *StringIndex) Index(ftr string) int {
+	if s == nil {
+		return -1
+	}
 	return s.mapping[ftr] - 1
 }
 
 //String get name for idx, if not exist, return ""
-func (s StringIndex) String(idx int) string {
+func (s *StringIndex) String(idx int) string {
+	if s == nil {
+		return ""
+	}
 	return StringArrayGetElse(s.array, idx, "")
 }
 
 //Length give the index length
-func (s StringIndex) Length() int {
+func (s *StringIndex) Length() int {
+	if s == nil {
+		return 0
+	}
 	return len(s.array)
 }
 
