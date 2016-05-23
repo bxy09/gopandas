@@ -1,6 +1,7 @@
 package gopandas
 
 import (
+	"github.com/golang/protobuf/proto"
 	"math"
 	"sort"
 	"time"
@@ -10,8 +11,8 @@ import (
 type TimePanel struct {
 	values      [][][]float64
 	dates       []time.Time
-	secondIndex *StringIndex
-	thirdIndex  *StringIndex
+	secondIndex Index
+	thirdIndex  Index
 }
 
 //TimePanelRO Read only TimePanel
@@ -22,10 +23,13 @@ type TimePanelRO interface {
 	Get(time.Time) (*DataFrame, time.Time)
 	IGet(int) *DataFrame
 	IDate(int) time.Time
+	Secondary() Index
+	Thirdly() Index
+	ToProtoBuf() ([]byte, error)
 }
 
 //NewTimePanel new time panel from second index and third index
-func NewTimePanel(secondIndex *StringIndex, thirdIndex *StringIndex) *TimePanel {
+func NewTimePanel(secondIndex Index, thirdIndex Index) *TimePanel {
 	return &TimePanel{
 		secondIndex: secondIndex,
 		thirdIndex:  thirdIndex,
@@ -132,10 +136,12 @@ func (p *TimePanel) Get(date time.Time) (*DataFrame, time.Time) {
 	return df, date
 }
 
+//Length return length of data
 func (p *TimePanel) Length() int {
 	return len(p.dates)
 }
 
+//IGet return data on index
 func (p *TimePanel) IGet(i int) *DataFrame {
 	if i < 0 || i >= len(p.dates) {
 		return nil
@@ -143,9 +149,84 @@ func (p *TimePanel) IGet(i int) *DataFrame {
 	return NewDataFrame(p.values[i], p.secondIndex, p.thirdIndex)
 }
 
+//IDate return date on index
 func (p *TimePanel) IDate(i int) time.Time {
 	if i < 0 || i >= len(p.dates) {
 		return AncientTime
 	}
 	return p.dates[i]
+}
+
+//Secondary return second index
+func (p *TimePanel) Secondary() Index {
+	return p.secondIndex
+}
+
+//Thirdly return third index
+func (p *TimePanel) Thirdly() Index {
+	return p.thirdIndex
+}
+
+//ToProtoBuf transfer to ProtoBuf
+func (p *TimePanel) ToProtoBuf() ([]byte, error) {
+	data := make([]float64, p.Length()*p.secondIndex.Length()*p.thirdIndex.Length())
+	dates := make([]uint64, p.Length())
+	secondary := make([]string, p.secondIndex.Length())
+	thirdly := make([]string, p.thirdIndex.Length())
+
+	idx := 0
+	thirdLen := p.thirdIndex.Length()
+	for i := range p.values {
+		for j := range p.values[i] {
+			copy(data[idx:], p.values[i][j])
+			idx += thirdLen
+		}
+	}
+	for i := range dates {
+		dates[i] = uint64(p.dates[i].UnixNano())
+	}
+	for i := range secondary {
+		secondary[i] = p.secondIndex.String(i)
+	}
+	for i := range thirdly {
+		thirdly[i] = p.thirdIndex.String(i)
+	}
+	return proto.Marshal(&FlyTimePanel{
+		Data:      data,
+		Dates:     dates,
+		Secondary: secondary,
+		Thirdly:   thirdly,
+	})
+}
+
+//FromProtoBuf transfer from ProtoBuf
+func (p *TimePanel) FromProtoBuf(bytes []byte) error {
+	fp := &FlyTimePanel{}
+	err := proto.Unmarshal(bytes, fp)
+	if err != nil {
+		return err
+	}
+	p.dates = make([]time.Time, len(fp.Dates))
+	for i := range fp.Dates {
+		p.dates[i] = time.Unix(0, int64(fp.Dates[i]))
+	}
+	p.secondIndex = NewStringIndex(fp.Secondary, true)
+	p.thirdIndex = NewStringIndex(fp.Thirdly, true)
+	p.values = make([][][]float64, len(p.dates))
+	idx := 0
+	for i := range p.dates {
+		p.values[i] = make([][]float64, p.secondIndex.Length())
+		for j := range p.values[i] {
+			p.values[i][j] = make([]float64, p.thirdIndex.Length())
+			copied := 0
+			if idx < len(fp.Data) {
+				copied = copy(p.values[i][j], fp.Data[idx:])
+				idx += copied
+			}
+			for ; copied < p.thirdIndex.Length(); copied++ {
+				p.values[i][j][copied] = math.NaN()
+			}
+		}
+	}
+	return nil
 }

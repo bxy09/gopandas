@@ -1,5 +1,12 @@
 package gopandas
 
+//Index transfer between string label and int index
+type Index interface {
+	Index(string) int
+	String(int) string
+	Length() int
+}
+
 //StringIndex implement index on the string
 type StringIndex struct {
 	mapping map[string]int

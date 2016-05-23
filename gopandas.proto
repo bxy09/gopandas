@@ -1,0 +1,7 @@
+package gopandas;
+message FlyTimePanel {
+    repeated double data = 1 [packed=true];
+    repeated uint64 dates = 2 [packed=true];
+    repeated string secondary = 3;
+    repeated string thirdly = 4;
+}

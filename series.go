@@ -2,14 +2,23 @@ package gopandas
 
 import "math"
 
+//SeriesRO series for read only
+type SeriesRO interface {
+	Index(string) int
+	String(int) string
+	Length() int
+	Get(string) float64
+	IGet(int) float64
+}
+
 //Series is a one-dimensional ndarray with string series axes.
 type Series struct {
-	*StringIndex
+	idx    Index
 	values []float64
 }
 
 //NewSeries construct serires by values and index
-func NewSeries(values []float64, idx *StringIndex) *Series {
+func NewSeries(values []float64, idx Index) *Series {
 	length := idx.Length()
 	if len(values) != length {
 		newValues := make([]float64, length)
@@ -20,14 +29,29 @@ func NewSeries(values []float64, idx *StringIndex) *Series {
 		values = newValues
 	}
 	return &Series{
-		StringIndex: idx,
-		values:      values,
+		idx:    idx,
+		values: values,
 	}
+}
+
+//Index find idx for label
+func (s *Series) Index(name string) int {
+	return s.idx.Index(name)
+}
+
+//String get label for idx
+func (s *Series) String(idx int) string {
+	return s.idx.String(idx)
+}
+
+//Length get len of labels
+func (s *Series) Length() int {
+	return s.idx.Length()
 }
 
 //Get get the value by string
 func (s *Series) Get(str string) float64 {
-	return s.IGet(s.Index(str))
+	return s.IGet(s.idx.Index(str))
 }
 
 //IGet get by int idx
@@ -36,4 +60,17 @@ func (s *Series) IGet(i int) float64 {
 		return math.NaN()
 	}
 	return s.values[i]
+}
+
+//ISet set by int idx
+func (s *Series) ISet(i int, value float64) {
+	if i < 0 || i >= len(s.values) {
+		return
+	}
+	s.values[i] = value
+}
+
+//Set set by name
+func (s *Series) Set(str string, value float64) {
+	s.ISet(s.Index(str), value)
 }
