@@ -36,7 +36,7 @@ func NewStringIndex(array []string, needCopy bool) *StringIndex {
 		array:   array,
 	}
 	if needCopy {
-		ret.array = make([]string, len(array))
+		ret.array = make([]string, len(mapping))
 		for value, idx := range mapping {
 			ret.array[idx-1] = value
 		}

@@ -2,6 +2,7 @@ package gopandas_test
 
 import (
 	"github.com/bxy09/gopandas"
+	"math"
 	"testing"
 	"time"
 )
@@ -111,14 +112,148 @@ func CheckSame(dates []time.Time, values [][][]float64, tp *gopandas.TimePanel, 
 	}
 }
 
+func CheckTPIsSame(a, b *gopandas.TimePanel, t *testing.T) {
+	if a.Length() != b.Length() {
+		t.Error("tp length not same")
+		return
+	}
+	if a.Secondary().Length() != b.Secondary().Length() {
+		t.Error("tp second length not same")
+		return
+	}
+	for i := 0; i < a.Secondary().Length(); i++ {
+		if a.Secondary().String(i) != b.Secondary().String(i) {
+			t.Error("secondary column wrong")
+			return
+		}
+	}
+	if a.Thirdly().Length() != b.Thirdly().Length() {
+		t.Error("tp third length not same")
+		return
+	}
+	for i := 0; i < a.Thirdly().Length(); i++ {
+		if a.Thirdly().String(i) != b.Thirdly().String(i) {
+			t.Error("thirdly column wrong")
+			return
+		}
+	}
+	for i := 0; i < a.Length(); i++ {
+		if !a.IDate(i).Equal(b.IDate(i)) {
+			t.Error("Wrong date on %d as %s:%s", i, a.IDate(i), b.IDate(i))
+		}
+		for j := 0; j < a.Secondary().Length(); j++ {
+			seriesA := a.IGet(i).IGet(j)
+			seriesB := b.IGet(i).IGet(j)
+			for k := 0; k < seriesA.Length(); k++ {
+				aValue := seriesA.IGet(k)
+				bValue := seriesB.IGet(k)
+				if aValue != bValue && !(math.IsNaN(aValue) && math.IsNaN(bValue)) {
+					t.Errorf("Wrong on (%s,%s,%s) as %f:%f",
+						a.IDate(i).String(), a.Secondary().String(j), a.Thirdly().String(k), aValue, bValue)
+				}
+			}
+		}
+	}
+}
+
 func DFSame(values [][]float64, df *gopandas.DataFrame, t *testing.T) {
 	major := df.Major()
 	for i := 0; i < major.Length(); i++ {
 		series := df.IGet(i)
 		for j := 0; j < series.Length(); j++ {
-			if series.IGet(j) != values[i][j] {
+			if series.IGet(j) != values[i][j] && !(math.IsNaN(series.IGet(j)) && math.IsNaN(values[i][j])) {
 				t.Errorf("Wrong on (%d,%d) as %f:%f", i, j, series.IGet(j), values[i][j])
 			}
 		}
+	}
+}
+
+func TestImport(t *testing.T) {
+	testTarget :=
+		`date,key,a,b,c,d
+	2016-02-01,000001.SZ,0.19,0.2,0.3,0.4
+	2016-01-01,000001.SZ,0.19,0.2,0.3,0.4
+	2016-01-01,000003.SZ,0.11,0.2,0.3,0.2`
+	panel, err := gopandas.ImportTimePanelFromCSV(testTarget)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("\n" + gopandas.DebugString(panel))
+	compile := func(str string) time.Time {
+		date, err := time.Parse("2006-01-02", str)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return date
+	}
+	CheckSame(
+		[]time.Time{compile("2016-01-01"), compile("2016-02-01")},
+		[][][]float64{
+			[][]float64{
+				[]float64{0.19, 0.2, 0.3, 0.4},
+				[]float64{0.11, 0.2, 0.3, 0.2},
+			},
+			[][]float64{
+				[]float64{0.19, 0.2, 0.3, 0.4},
+				[]float64{math.NaN(), math.NaN(), math.NaN(), math.NaN()},
+			},
+		},
+		panel,
+		t,
+	)
+}
+
+func TestSecondaryReplace(t *testing.T) {
+	aTarget :=
+		`date,key,a,b,c,d
+2016-01-01,000001.SZ,0.19,0.2,0.3,0.4
+2016-02-01,000001.SZ,0.19,0.2,0.3,0.5
+2016-01-01,000003.SZ,0.11,0.2,0.3,0.2`
+	bTarget :=
+		`date,key,a,b,c,f
+2016-02-01,000001.SZ,0.19,0.2,0.3,0.4
+2016-01-01,000001.SZ,0.19,0.2,0.3,0.4
+2016-01-01,000003.SZ,0.11,0.2,0.3,0.2`
+	aPanel, _ := gopandas.ImportTimePanelFromCSV(aTarget)
+	bPanel, _ := gopandas.ImportTimePanelFromCSV(bTarget)
+	aPanel.SecondaryLeftReplace(bPanel)
+	oldAPanel, _ := gopandas.ImportTimePanelFromCSV(aTarget)
+	t.Log("Test join b")
+	CheckTPIsSame(aPanel, oldAPanel, t)
+	if t.Failed() {
+		t.Fatal()
+	}
+	cTarget :=
+		`date,key,a,b,c,d
+2016-01-01,000003.SZ,0.12,0.2,0.4,0.6`
+	cPanel, _ := gopandas.ImportTimePanelFromCSV(cTarget)
+	aPanel.SecondaryLeftReplace(cPanel)
+	dTarget :=
+		`date,key,a,b,c,d
+2016-01-01,000001.SZ,0.19,0.2,0.3,0.4
+2016-02-01,000001.SZ,0.19,0.2,0.3,0.5
+2016-01-01,000003.SZ,0.12,0.2,0.4,0.6
+2016-02-01,000003.SZ,0.12,0.2,0.4,0.6`
+	dPanel, _ := gopandas.ImportTimePanelFromCSV(dTarget)
+	t.Log("Test join c")
+	CheckTPIsSame(aPanel, dPanel, t)
+	if t.Failed() {
+		t.Fatal()
+	}
+	fTarget :=
+		`date,key,a,b,c,d
+2016-02-01,000001.SZ,0.12,0.2,0.4,0.6`
+	fPanel, _ := gopandas.ImportTimePanelFromCSV(fTarget)
+	aPanel.SecondaryLeftReplace(fPanel)
+	gTarget :=
+		`date,key,a,b,c,d
+2016-02-01,000001.SZ,0.12,0.2,0.4,0.6
+2016-01-01,000003.SZ,0.12,0.2,0.4,0.6
+2016-02-01,000003.SZ,0.12,0.2,0.4,0.6`
+	gPanel, _ := gopandas.ImportTimePanelFromCSV(gTarget)
+	t.Log("Test join f")
+	CheckTPIsSame(aPanel, gPanel, t)
+	if t.Failed() {
+		t.Fatal()
 	}
 }

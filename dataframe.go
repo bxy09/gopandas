@@ -11,12 +11,24 @@ func NewDataFrame(values [][]float64, majorIndex Index, secondIndex Index) *Data
 	return &DataFrame{values, majorIndex, secondIndex}
 }
 
-func (d *DataFrame) Get(str string) SeriesRO {
+func (d *DataFrame) Get(str string) *Series {
+	if d == nil {
+		return nil
+	}
 	return d.IGet(d.majorIndex.Index(str))
 }
 
-func (d *DataFrame) IGet(i int) SeriesRO {
-	if i < 0 || i >= len(d.values) {
+func (d *DataFrame) IGet(i int) *Series {
+	if d == nil {
+		return nil
+	}
+	if i >= len(d.values) {
+		if i >= d.majorIndex.Length() {
+			return nil
+		}
+		i = len(d.values) - 1
+	}
+	if i < 0 {
 		return nil
 	}
 	return NewSeries(d.values[i], d.secondIndex)
