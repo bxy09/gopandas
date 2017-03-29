@@ -42,6 +42,11 @@ func NewSeries(values []float64, idx Index) *Series {
 	}
 }
 
+//Raw return the raw data
+func (s *Series) Raw() []float64 {
+	return s.values
+}
+
 //Index find idx for label
 func (s *Series) Index(name string) int {
 	return s.idx.Index(name)

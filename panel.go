@@ -272,6 +272,11 @@ func (p *TimePanel) Thirdly() Index {
 	return p.thirdIndex
 }
 
+//Raw return the raw data
+func (p *TimePanel) Raw() [][][]float64 {
+	return p.values
+}
+
 //ToProtoBuf transfer to ProtoBuf
 func (p *TimePanel) ToProtoBuf() ([]byte, error) {
 	data := make([]float64, p.Length()*p.secondIndex.Length()*p.thirdIndex.Length())
