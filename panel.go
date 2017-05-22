@@ -31,7 +31,6 @@ type TimePanelRO interface {
 	IDate(int) time.Time
 	Secondary() Index
 	Thirdly() Index
-	ToProtoBuf() ([]byte, error)
 }
 
 //NewTimePanel new time panel from second index and third index
@@ -278,7 +277,7 @@ func (p *TimePanel) Raw() [][][]float64 {
 }
 
 //ToProtoBuf transfer to ProtoBuf
-func (p *TimePanel) ToProtoBuf() ([]byte, error) {
+func (p *TimePanel) Marshal() ([]byte, error) {
 	data := make([]float64, p.Length()*p.secondIndex.Length()*p.thirdIndex.Length())
 	dates := make([]uint64, p.Length())
 	secondary := make([]string, p.secondIndex.Length())
@@ -310,7 +309,7 @@ func (p *TimePanel) ToProtoBuf() ([]byte, error) {
 }
 
 //FromProtoBuf transfer from ProtoBuf
-func (p *TimePanel) FromProtoBuf(bytes []byte) error {
+func (p *TimePanel) Unmarshal(bytes []byte) error {
 	fp := &FlyTimePanel{}
 	err := proto.Unmarshal(bytes, fp)
 	if err != nil {
@@ -339,6 +338,19 @@ func (p *TimePanel) FromProtoBuf(bytes []byte) error {
 		}
 	}
 	return nil
+}
+
+// Reset Implement needs from Protobuf
+func (p *TimePanel) Reset() {
+}
+
+// String Implement needs from Protobuf
+func (p *TimePanel) String() string {
+	return "TimePanel"
+}
+
+// ProtoMessage Implement needs from Protobuf
+func (p *TimePanel) ProtoMessage() {
 }
 
 // ImportTimePanelFromCSV import time panel from csv format string, using the first column for time, second column for

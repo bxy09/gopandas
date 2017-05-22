@@ -4,6 +4,7 @@ import (
 	"github.com/bxy09/gopandas"
 	"testing"
 	"time"
+	"github.com/golang/protobuf/proto"
 )
 
 func TestProtoTimePanel(t *testing.T) {
@@ -29,12 +30,12 @@ func TestProtoTimePanel(t *testing.T) {
 	for i := range dates {
 		tp.AddMat(dates[i], values[i])
 	}
-	bytes, err := tp.ToProtoBuf()
+	bytes, err := proto.Marshal(tp)
 	if err != nil {
 		t.Fatal(err)
 	}
 	other := new(gopandas.TimePanel)
-	err = other.FromProtoBuf(bytes)
+	err = proto.Unmarshal(bytes, other)
 	if err != nil {
 		t.Fatal(err)
 	}

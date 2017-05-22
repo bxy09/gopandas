@@ -2,7 +2,7 @@ syntax = "proto3";
 package gopandas;
 option go_package = "github.com/bxy09/gopandas";
 
-message TimePanel {
+message FlyTimePanel {
     repeated double data = 1;
     repeated uint64 dates = 2;
     repeated string secondary = 3;

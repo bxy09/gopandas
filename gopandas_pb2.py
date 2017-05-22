@@ -18,43 +18,44 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='gopandas.proto',
   package='gopandas',
-  serialized_pb=_b('\n\x0egopandas.proto\x12\x08gopandas\"W\n\x0c\x46lyTimePanel\x12\x10\n\x04\x64\x61ta\x18\x01 \x03(\x01\x42\x02\x10\x01\x12\x11\n\x05\x64\x61tes\x18\x02 \x03(\x04\x42\x02\x10\x01\x12\x11\n\tsecondary\x18\x03 \x03(\t\x12\x0f\n\x07thirdly\x18\x04 \x03(\t')
+  syntax='proto3',
+  serialized_pb=_b('\n\x0egopandas.proto\x12\x08gopandas\"L\n\tTimePanel\x12\x0c\n\x04\x64\x61ta\x18\x01 \x03(\x01\x12\r\n\x05\x64\x61tes\x18\x02 \x03(\x04\x12\x11\n\tsecondary\x18\x03 \x03(\t\x12\x0f\n\x07thirdly\x18\x04 \x03(\tB\x1bZ\x19github.com/bxy09/gopandasb\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
 
-_FLYTIMEPANEL = _descriptor.Descriptor(
-  name='FlyTimePanel',
-  full_name='gopandas.FlyTimePanel',
+_TIMEPANEL = _descriptor.Descriptor(
+  name='TimePanel',
+  full_name='gopandas.TimePanel',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='data', full_name='gopandas.FlyTimePanel.data', index=0,
+      name='data', full_name='gopandas.TimePanel.data', index=0,
       number=1, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=_descriptor._ParseOptions(descriptor_pb2.FieldOptions(), _b('\020\001'))),
+      options=None),
     _descriptor.FieldDescriptor(
-      name='dates', full_name='gopandas.FlyTimePanel.dates', index=1,
+      name='dates', full_name='gopandas.TimePanel.dates', index=1,
       number=2, type=4, cpp_type=4, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=_descriptor._ParseOptions(descriptor_pb2.FieldOptions(), _b('\020\001'))),
+      options=None),
     _descriptor.FieldDescriptor(
-      name='secondary', full_name='gopandas.FlyTimePanel.secondary', index=2,
+      name='secondary', full_name='gopandas.TimePanel.secondary', index=2,
       number=3, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='thirdly', full_name='gopandas.FlyTimePanel.thirdly', index=3,
+      name='thirdly', full_name='gopandas.TimePanel.thirdly', index=3,
       number=4, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -68,25 +69,24 @@ _FLYTIMEPANEL = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto3',
   extension_ranges=[],
   oneofs=[
   ],
   serialized_start=28,
-  serialized_end=115,
+  serialized_end=104,
 )
 
-DESCRIPTOR.message_types_by_name['FlyTimePanel'] = _FLYTIMEPANEL
+DESCRIPTOR.message_types_by_name['TimePanel'] = _TIMEPANEL
 
-FlyTimePanel = _reflection.GeneratedProtocolMessageType('FlyTimePanel', (_message.Message,), dict(
-  DESCRIPTOR = _FLYTIMEPANEL,
+TimePanel = _reflection.GeneratedProtocolMessageType('TimePanel', (_message.Message,), dict(
+  DESCRIPTOR = _TIMEPANEL,
   __module__ = 'gopandas_pb2'
-  # @@protoc_insertion_point(class_scope:gopandas.FlyTimePanel)
+  # @@protoc_insertion_point(class_scope:gopandas.TimePanel)
   ))
-_sym_db.RegisterMessage(FlyTimePanel)
+_sym_db.RegisterMessage(TimePanel)
 
 
-_FLYTIMEPANEL.fields_by_name['data'].has_options = True
-_FLYTIMEPANEL.fields_by_name['data']._options = _descriptor._ParseOptions(descriptor_pb2.FieldOptions(), _b('\020\001'))
-_FLYTIMEPANEL.fields_by_name['dates'].has_options = True
-_FLYTIMEPANEL.fields_by_name['dates']._options = _descriptor._ParseOptions(descriptor_pb2.FieldOptions(), _b('\020\001'))
+DESCRIPTOR.has_options = True
+DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('Z\031github.com/bxy09/gopandas'))
 # @@protoc_insertion_point(module_scope)
