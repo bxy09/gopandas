@@ -1,10 +1,11 @@
 package gopandas_test
 
 import (
-	"github.com/bxy09/gopandas"
 	"math"
 	"testing"
 	"time"
+
+	"github.com/bxy09/gopandas"
 )
 
 func TestTimePanel(t *testing.T) {

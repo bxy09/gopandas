@@ -1,8 +1,9 @@
 package gopandas_test
 
 import (
-	"github.com/bxy09/gopandas"
 	"testing"
+
+	"github.com/bxy09/gopandas"
 )
 
 func TestStringIndex(t *testing.T) {

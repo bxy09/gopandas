@@ -4,12 +4,13 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"github.com/golang/protobuf/proto"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/golang/protobuf/proto"
 )
 
 //TimePanel represents wide format panel data, stored as 3-dimensional array with sorted date major index

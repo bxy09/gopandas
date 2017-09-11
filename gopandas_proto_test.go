@@ -1,9 +1,10 @@
 package gopandas_test
 
 import (
-	"github.com/bxy09/gopandas"
 	"testing"
 	"time"
+
+	"github.com/bxy09/gopandas"
 	"github.com/golang/protobuf/proto"
 )
 
