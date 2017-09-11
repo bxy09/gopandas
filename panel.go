@@ -3,15 +3,19 @@ package gopandas
 import (
 	"encoding/csv"
 	"errors"
-	"fmt"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
+	"bytes"
+
 	"github.com/golang/protobuf/proto"
 )
+
+const DateKey = "date"
+const SecondKey = "key"
 
 //TimePanel represents wide format panel data, stored as 3-dimensional array with sorted date major index
 type TimePanel struct {
@@ -341,6 +345,38 @@ func (p *TimePanel) Unmarshal(bytes []byte) error {
 	return nil
 }
 
+func (p *TimePanel) WriteCSV(writer *csv.Writer) error {
+	defer writer.Flush()
+	row := make([]string, p.thirdIndex.Length()+2)
+	thirdLength := p.thirdIndex.Length()
+	for i := 0; i < thirdLength; i++ {
+		row[i+2] = p.thirdIndex.String(i)
+	}
+	row[0] = DateKey
+	row[1] = SecondKey
+	writer.Write(row)
+	for i := 0; i < p.Length(); i++ {
+		row[0] = p.IDate(i).Format(time.RFC3339)
+		df := p.IGet(i)
+		for j := 0; j < df.Major().Length(); j++ {
+			row[1] = df.Major().String(j)
+			series := df.IGet(j)
+			allNaN := true
+			for k := 0; k < df.Secondary().Length(); k++ {
+				value := series.IGet(k)
+				row[k+2] = strconv.FormatFloat(value, 'g', 10, 64)
+				if allNaN && !math.IsNaN(value) {
+					allNaN = false
+				}
+			}
+			if !allNaN {
+				writer.Write(row)
+			}
+		}
+	}
+	return nil
+}
+
 // Reset Implement needs from Protobuf
 func (p *TimePanel) Reset() {
 }
@@ -381,9 +417,9 @@ func ImportTimePanelFromCSV(str string) (*TimePanel, error) {
 	secondIndex := NewStringIndex(secondKeys, false)
 	data := make(map[int64][][]float64)
 	for _, record := range records {
-		date, err := time.Parse(time.RFC3339, record[0])
+		date, err := time.ParseInLocation(time.RFC3339, record[0], time.Local)
 		if err != nil {
-			date, err = time.Parse("2006-01-02", record[0])
+			date, err = time.ParseInLocation("2006-01-02", record[0], time.Local)
 			if err != nil {
 				return nil, errors.New("Unknown timeformat")
 			}
@@ -418,18 +454,8 @@ func ImportTimePanelFromCSV(str string) (*TimePanel, error) {
 }
 
 func DebugString(panel TimePanelRO) string {
-	str := ``
-	for i := 0; i < panel.Length(); i++ {
-		str += panel.IDate(i).String() + ":\n"
-		df := panel.IGet(i)
-		for j := 0; j < df.Major().Length(); j++ {
-			str += df.Major().String(j) + " ::: "
-			series := df.IGet(j)
-			for k := 0; k < df.Secondary().Length(); k++ {
-				str += fmt.Sprintf("%s:%f, ", series.String(k), series.IGet(k))
-			}
-			str += "\n"
-		}
-	}
-	return str
+	writer := bytes.NewBuffer(nil)
+	csvWriter := csv.NewWriter(writer)
+	panel.(*TimePanel).WriteCSV(csvWriter)
+	return writer.String()
 }

@@ -181,7 +181,7 @@ func TestImport(t *testing.T) {
 	}
 	t.Log("\n" + gopandas.DebugString(panel))
 	compile := func(str string) time.Time {
-		date, err := time.Parse("2006-01-02", str)
+		date, err := time.ParseInLocation("2006-01-02", str, time.Local)
 		if err != nil {
 			t.Fatal(err)
 		}
